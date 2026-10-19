@@ -1,0 +1,236 @@
+# CleanSweep — base junk category rules.
+# Kategori baru bisa ditambah di <config>/cleansweep/rules/*.toml
+# tanpa mengubah kode inti. Lihat docs di src/rules.rs.
+#
+# Placeholder variabel: $HOME, $HOME_CACHE, $HOME_CONFIG,
+# $HOME_LOCAL_SHARE, $TMPDIR, $CARGO_HOME, $GOPATH, atau path absolut / ~.
+# kind: "dir" | "glob_children" | "marker_dir"
+# risk: "safe" | "caution"
+
+# Daftar direktori yang dilewati saat kind = "marker_dir" agar traversal
+# tidak masuk ke hutan cache/toolchain sendiri.
+[scan]
+marker_dir_exclude = [
+  ".cache", ".config", ".local", ".npm", ".cargo", ".gradle", ".m2",
+  ".mozilla", ".vscode", ".idea", "node_modules", ".git", ".ssh",
+]
+
+# ---------------- Sistem ----------------
+
+[[category]]
+id = "system.temp"
+label = "Temporary files"
+label_key = "cat.systemTemp"
+description = "Per-user files in the OS temp directory."
+desc_key = "cat.systemTempDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$TMPDIR"
+kind = "glob_children"
+pattern = "*"
+platforms = ["linux", "macos"]
+
+[[category]]
+id = "system.thumbnails"
+label = "Thumbnail cache"
+label_key = "cat.thumbnails"
+description = "Freedesktop thumbnail cache, regenerated on demand."
+desc_key = "cat.thumbnailsDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$HOME_CACHE/thumbnails"
+platforms = ["linux"]
+
+[[category]]
+id = "system.trash"
+label = "Trash"
+label_key = "cat.trash"
+description = "Files already in the Trash. Removing them frees space but cannot be undone."
+desc_key = "cat.trashDesc"
+risk = "caution"
+[[category.targets]]
+dir = "$HOME_LOCAL_SHARE/Trash/files"
+platforms = ["linux"]
+
+[[category]]
+id = "system.old_logs"
+label = "Old user logs"
+label_key = "cat.oldLogs"
+description = "Rotated logs and crash dumps in the user cache dir."
+desc_key = "cat.oldLogsDesc"
+risk = "caution"
+[[category.targets]]
+dir = "$HOME_CACHE"
+kind = "glob_children"
+pattern = "*.log"
+platforms = ["linux"]
+
+# ---------------- Browser ----------------
+
+[[category]]
+id = "browser.cache"
+label = "Browser caches"
+label_key = "cat.browserCache"
+description = "HTTP caches of Chrome/Chromium, Firefox and Brave. Cookies and passwords are never touched."
+desc_key = "cat.browserCacheDesc"
+risk = "safe"
+# Chrome-family
+[[category.targets]]
+dir = "$HOME_CONFIG/google-chrome"
+kind = "glob_children"
+pattern = "*/Cache"
+platforms = ["linux"]
+[[category.targets]]
+dir = "$HOME_CONFIG/google-chrome"
+kind = "glob_children"
+pattern = "*/Code Cache"
+platforms = ["linux"]
+[[category.targets]]
+dir = "$HOME_CONFIG/chromium"
+kind = "glob_children"
+pattern = "*/Cache"
+platforms = ["linux"]
+[[category.targets]]
+dir = "$HOME_CONFIG/chromium"
+kind = "glob_children"
+pattern = "*/Code Cache"
+platforms = ["linux"]
+[[category.targets]]
+dir = "$HOME_CONFIG/BraveSoftware/Brave-Browser"
+kind = "glob_children"
+pattern = "*/Cache"
+platforms = ["linux"]
+[[category.targets]]
+dir = "$HOME_CONFIG/BraveSoftware/Brave-Browser"
+kind = "glob_children"
+pattern = "*/Code Cache"
+platforms = ["linux"]
+# Firefox: cache lives under ~/.cache/mozilla
+[[category.targets]]
+dir = "$HOME_CACHE/mozilla"
+kind = "glob_children"
+pattern = "*/cache2"
+platforms = ["linux"]
+
+# ---------------- Toolchain developer ----------------
+
+[[category]]
+id = "dev.npm"
+label = "npm / pnpm / yarn caches"
+label_key = "cat.npm"
+description = "Package download caches; rebuilt automatically on next install."
+desc_key = "cat.npmDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$HOME_CACHE/npm"                       # npm cache (npm>=7 on linux)
+[[category.targets]]
+dir = "$HOME/.npm/_cacache"                   # npm cache (classic layout)
+[[category.targets]]
+dir = "$HOME_LOCAL_SHARE/pnpm/store"          # pnpm store
+[[category.targets]]
+dir = "$HOME_CACHE/pnpm"
+[[category.targets]]
+dir = "$HOME_CACHE/yarn"                      # yarn v1 cache
+[[category.targets]]
+dir = "$HOME/.yarn/berry/cache"               # yarn berry global cache
+
+[[category]]
+id = "dev.pip"
+label = "pip cache"
+label_key = "cat.pip"
+description = "Python pip wheel/download cache."
+desc_key = "cat.pipDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$HOME_CACHE/pip"
+platforms = ["linux"]
+
+[[category]]
+id = "dev.python_marker"
+label = "Python __pycache__"
+label_key = "cat.pycache"
+description = "__pycache__ directories found under ~/projects-like roots may be regenerated."
+desc_key = "cat.pycacheDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$HOME"
+kind = "marker_dir"
+pattern = "__pycache__"
+max_depth = 6
+platforms = ["linux"]
+
+[[category]]
+id = "dev.composer"
+label = "Composer cache"
+label_key = "cat.composer"
+description = "PHP Composer package cache."
+desc_key = "cat.composerDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$HOME_CACHE/composer"
+platforms = ["linux"]
+
+[[category]]
+id = "dev.cargo"
+label = "Cargo registry cache"
+label_key = "cat.cargo"
+description = "Downloaded crates in ~/.cargo/registry — re-downloaded as needed."
+desc_key = "cat.cargoDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$CARGO_HOME/registry/cache"
+[[category.targets]]
+dir = "$CARGO_HOME/registry/src"
+[[category.targets]]
+dir = "$CARGO_HOME/git/checkouts"
+
+[[category]]
+id = "dev.gradle"
+label = "Gradle cache"
+label_key = "cat.gradle"
+description = "Gradle dependency and build caches."
+desc_key = "cat.gradleDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$HOME/.gradle/caches"
+platforms = ["linux"]
+
+[[category]]
+id = "dev.maven"
+label = "Maven repository cache"
+label_key = "cat.maven"
+description = "Local Maven repository (~/.m2/repository)."
+desc_key = "cat.mavenDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$HOME/.m2/repository"
+platforms = ["linux"]
+
+[[category]]
+id = "dev.go"
+label = "Go build cache"
+label_key = "cat.go"
+description = "Go build and module download caches."
+desc_key = "cat.goDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$HOME_CACHE/go-build"
+platforms = ["linux"]
+[[category.targets]]
+dir = "$GOPATH/pkg/mod/cache"
+platforms = ["linux"]
+
+# ---------------- Aplikasi ----------------
+
+[[category]]
+id = "apps.user_cache"
+label = "App caches (~/.cache)"
+label_key = "cat.appCache"
+description = "Generic application caches in ~/.cache not covered above."
+desc_key = "cat.appCacheDesc"
+risk = "safe"
+[[category.targets]]
+dir = "$HOME_CACHE"
+kind = "glob_children"
+pattern = "*"
+platforms = ["linux"]

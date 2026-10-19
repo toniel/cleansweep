@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.npm-cache/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Rust / Tauri
+src-tauri/target
+src-tauri/gen/schemas/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Product requirements (excluded from repo)
+PRD — Tauri System Cleaner (CleanSweep).md
